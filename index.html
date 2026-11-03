@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lowkey Loot</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0B0F'/%3E%3Ctext x='32' y='42' font-family='Arial,sans-serif' font-weight='900' font-size='26' fill='%23C6FF3D' text-anchor='middle'%3ELL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!--
+==================================================================
+  LOWKEY LOOT — setup notes (read before editing)
+==================================================================
+  Everything you'll ever need to change lives in the CONFIG object
+  near the top of the <script> at the bottom of this file:
+  shop name, email, UPI ID, WhatsApp, Instagram, texts in 3
+  languages, and the products list.
+
+  LOGO: this file looks for a file named exactly "logo.png" sitting
+  next to index.html on GitHub. Until you upload one, a text logo
+  (gradient "LOWKEY LOOT") shows automatically instead — nothing
+  breaks either way.
+
+  Full step-by-step setup guide is in the big comment at the very
+  end of this file.
+==================================================================
+-->
+
+<style>
+  :root{
+    --lime:   #C6FF3D;
+    --purple: #8B5CF6;
+    --blue:   #3DDCFF;
+    --ink:    #0B0B0F;
+    --ink2:   #14141C;
+    --card:   #1B1B26;
+    --line:   #2B2B38;
+    --text:   #F3F2F8;
+    --text-dim: #9D9DB0;
+    --danger: #FF5D5D;
+    --font-head: 'Bungee', 'Poppins', sans-serif;
+    --font-body: 'Poppins', -apple-system, sans-serif;
+    --radius: 14px;
+    color-scheme: dark;
+  }
+  [data-theme="light"]{
+    --ink:    #FAFAF7;
+    --ink2:   #FFFFFF;
+    --card:   #FFFFFF;
+    --line:   #E7E5F0;
+    --text:   #17171F;
+    --text-dim: #63637A;
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important;}
+  }
+  body{
+    background:var(--ink); color:var(--text);
+    font-family:var(--font-body);
+    overflow-x:hidden;
+    position:relative;
+  }
+  img{max-width:100%; display:block;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
+  .hidden{display:none !important;}
+
+  /* ---------- ambient glow background ---------- */
+  .bg-glow{
+    position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
+  }
+  .bg-glow span{
+    position:absolute; border-radius:50%; filter:blur(90px); opacity:.28;
+    animation:drift 18s ease-in-out infinite alternate;
+  }
+  .bg-glow span:nth-child(1){width:420px; height:420px; background:var(--purple); top:-120px; left:-100px;}
+  .bg-glow span:nth-child(2){width:360px; height:360px; background:var(--blue); bottom:-100px; right:-80px; animation-delay:-6s;}
+  .bg-glow span:nth-child(3){width:260px; height:260px; background:var(--lime); top:40%; left:60%; animation-delay:-12s;}
+  @keyframes drift{ to{ transform:translate(40px,30px) scale(1.15); } }
+  [data-theme="light"] .bg-glow span{opacity:.14;}
+
+  .sparkle{position:absolute; width:4px; height:4px; background:var(--lime); border-radius:50%; opacity:.8; animation:twinkle 2.4s ease-in-out infinite;}
+  @keyframes twinkle{ 0%,100%{opacity:.2; transform:scale(.6);} 50%{opacity:1; transform:scale(1.3);} }
+
+  /* ---------- scrolling banner ---------- */
+  .marquee{
+    background:linear-gradient(90deg, var(--purple), var(--blue));
+    color:#070709; font-weight:700; font-size:12.5px; letter-spacing:.3px;
+    overflow:hidden; white-space:nowrap; padding:7px 0;
+  }
+  .marquee-track{display:inline-block; animation:scrollLeft 22s linear infinite;}
+  .marquee-track span{margin:0 28px;}
+  @keyframes scrollLeft{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:color-mix(in srgb, var(--ink) 88%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:12px 20px; max-width:1180px; margin:0 auto; gap:12px;}
+  .brand{display:flex; align-items:center; gap:10px; min-width:0;}
+  .brand img{height:48px; width:auto;}
+  .brand-text{
+    font-family:var(--font-head); font-size:15px; line-height:1;
+    display:flex; align-items:center; gap:6px;
+  }
+  .brand-text .lk{color:var(--lime);}
+  .brand-text .lt{background:linear-gradient(90deg, var(--blue), var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+
+  .nav-actions{display:flex; align-items:center; gap:8px;}
+  .icon-btn{
+    width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card); border:1px solid var(--line); font-size:15px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .icon-btn:hover{transform:translateY(-2px); box-shadow:0 0 16px color-mix(in srgb, var(--lime) 40%, transparent);}
+  .lang-switch{display:flex; gap:4px; background:var(--card); border:1px solid var(--line); border-radius:999px; padding:3px;}
+  .lang-switch button{
+    padding:6px 10px; border-radius:999px; font-size:11.5px; font-weight:700; color:var(--text-dim);
+  }
+  .lang-switch button.active{background:var(--lime); color:#0B0B0F;}
+  .cart-btn{position:relative;}
+  .cart-count{
+    position:absolute; top:-4px; right:-4px;
+    background:var(--lime); color:#0B0B0F; font-size:10px; font-weight:800;
+    width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 20px 48px; text-align:center; position:relative;}
+  .hero-eyebrow{
+    display:inline-block; font-size:12px; font-weight:700; letter-spacing:1px;
+    color:var(--lime); border:1px solid color-mix(in srgb, var(--lime) 50%, transparent);
+    padding:6px 14px; border-radius:999px; margin-bottom:18px;
+    animation:popIn .6s ease both;
+  }
+  .hero h1{
+    font-family:var(--font-head); font-size:clamp(28px, 7vw, 54px);
+    line-height:1.15; max-width:16ch; margin:0 auto 16px;
+    animation:slideUp .7s ease both; animation-delay:.1s;
+  }
+  .hero h1 .grad{background:linear-gradient(90deg, var(--lime), var(--blue), var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero p{color:var(--text-dim); max-width:46ch; margin:0 auto 28px; font-size:15px; animation:slideUp .7s ease both; animation-delay:.2s;}
+  .hero-ctas{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; animation:slideUp .7s ease both; animation-delay:.3s;}
+
+  @keyframes slideUp{ from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes popIn{ from{opacity:0; transform:scale(.8);} to{opacity:1; transform:scale(1);} }
+
+  .btn{
+    padding:14px 26px; border-radius:999px; font-weight:700; font-size:14px;
+    transition:transform .15s ease, box-shadow .2s ease;
+  }
+  .btn-glow{background:var(--lime); color:#0B0B0F; box-shadow:0 0 0 rgba(198,255,61,0);}
+  .btn-glow:hover{transform:translateY(-2px); box-shadow:0 6px 24px color-mix(in srgb, var(--lime) 55%, transparent);}
+  .btn-ghost{border:1.5px solid var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--purple); box-shadow:0 0 20px color-mix(in srgb, var(--purple) 35%, transparent);}
+  .btn:active{transform:scale(.96);}
+
+  /* ---------- how it works ---------- */
+  .how{padding:20px 20px 50px;}
+  .how-grid{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .how-step{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px; text-align:center;
+    opacity:0; transform:translateY(16px);
+  }
+  .how-step.visible{animation:slideUp .5s ease forwards;}
+  .how-num{
+    width:30px; height:30px; border-radius:50%; margin:0 auto 10px;
+    background:linear-gradient(135deg, var(--lime), var(--blue)); color:#0B0B0F;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;
+  }
+  .how-step p{font-size:12.5px; font-weight:600;}
+  @media(max-width:700px){.how-grid{grid-template-columns:repeat(2,1fr);}}
+
+  /* ---------- products ---------- */
+  .products{padding:10px 20px 60px;}
+  .section-title{
+    font-family:var(--font-head); font-size:24px; text-align:center; margin-bottom:22px;
+  }
+  .tools{
+    max-width:760px; margin:0 auto 24px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+  }
+  .search-box{
+    flex:1; min-width:180px; background:var(--card); border:1px solid var(--line); border-radius:999px;
+    padding:11px 18px; font-size:13.5px; color:var(--text);
+  }
+  .search-box::placeholder{color:var(--text-dim);}
+  .cat-chip{
+    padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--card);
+    font-size:12.5px; font-weight:600; color:var(--text-dim);
+  }
+  .cat-chip.active{background:var(--purple); color:#fff; border-color:var(--purple);}
+
+  .grid{
+    max-width:1180px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:16px;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+    opacity:0; transform:translateY(20px);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .card.visible{animation:slideUp .5s ease forwards;}
+  .card:hover{transform:translateY(-4px); border-color:var(--lime); box-shadow:0 8px 28px color-mix(in srgb, var(--purple) 30%, transparent);}
+  .card-media{
+    aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+    font-size:46px; background:linear-gradient(135deg, color-mix(in srgb, var(--purple) 30%, var(--card)), color-mix(in srgb, var(--blue) 25%, var(--card)));
+    position:relative; cursor:pointer;
+  }
+  .card-media img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+  .tag{
+    position:absolute; top:8px; left:8px; font-size:9.5px; font-weight:800; letter-spacing:.3px;
+    background:rgba(0,0,0,.55); color:var(--lime); padding:4px 8px; border-radius:999px;
+    backdrop-filter:blur(4px);
+  }
+  .tag-soldout{top:auto; bottom:8px; left:8px; background:var(--danger); color:#fff;}
+  .card.soldout .card-media{filter:grayscale(.7) brightness(.6);}
+  .card-body{padding:12px; display:flex; flex-direction:column; gap:6px; flex:1;}
+  .card-name{font-size:13px; font-weight:700; line-height:1.3; cursor:pointer;}
+  .card-sample{font-size:10px; color:var(--text-dim); font-style:italic;}
+  .card-price{font-family:var(--font-head); font-size:16px; margin-top:auto;}
+  .card-price small{font-size:10px; color:var(--text-dim); font-family:var(--font-body); margin-left:4px;}
+  .add-btn{
+    margin-top:4px; background:var(--lime); color:#0B0B0F; border-radius:999px; padding:9px; font-size:12px; font-weight:800;
+    transition:transform .15s ease;
+  }
+  .add-btn:active{transform:scale(.95);}
+  .add-btn.added{background:var(--blue);}
+  .add-btn:disabled{background:var(--line); color:var(--text-dim);}
+  .shake{animation:shake .35s ease;}
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+
+  /* ---------- reviews ---------- */
+  .reviews{padding:10px 20px 60px; text-align:center;}
+  .reviews-box{
+    max-width:480px; margin:0 auto; background:var(--card); border:1px dashed var(--line);
+    border-radius:var(--radius); padding:34px 20px; color:var(--text-dim); font-size:13.5px;
+  }
+
+  /* ---------- about / contact ---------- */
+  .about{padding:10px 20px 60px;}
+  .about-box{
+    max-width:720px; margin:0 auto; background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:28px; text-align:center;
+  }
+  .about-box p{color:var(--text-dim); font-size:13.5px; margin-top:10px; line-height:1.7;}
+  .nocall{
+    margin-top:16px; padding:12px 16px; border-radius:10px;
+    background:color-mix(in srgb, var(--purple) 15%, transparent); border:1px solid color-mix(in srgb, var(--purple) 40%, transparent);
+    font-size:12.5px;
+  }
+  .insta-link{display:inline-flex; align-items:center; gap:6px; margin-top:14px; font-weight:700; color:var(--lime); font-size:13px;}
+
+  /* ---------- footer ---------- */
+  footer{padding:30px 20px 100px; text-align:center; border-top:1px solid var(--line);}
+  .footer-brand{font-family:var(--font-head); font-size:16px; margin-bottom:8px;}
+  footer p{font-size:11.5px; color:var(--text-dim); margin-top:6px; max-width:500px; margin-left:auto; margin-right:auto;}
+  .footer-links{display:flex; gap:16px; justify-content:center; margin-top:14px; font-size:12px;}
+  .footer-links button{color:var(--text-dim); text-decoration:underline;}
+
+  /* ---------- floating my-orders ---------- */
+  .fab{
+    position:fixed; bottom:20px; left:20px; z-index:45;
+    background:var(--card); border:1px solid var(--line); color:var(--text);
+    padding:11px 16px; border-radius:999px; font-size:12px; font-weight:700;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);
+  }
+
+  /* ---------- overlay / drawers / modals ---------- */
+  .overlay{position:fixed; inset:0; background:rgba(5,5,10,.6); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:70;}
+  .overlay.open{opacity:1; pointer-events:auto;}
+
+  .drawer{
+    position:fixed; top:0; right:0; height:100%; width:min(420px,100%);
+    background:var(--ink2); border-left:1px solid var(--line);
+    transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+    z-index:71; display:flex; flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{padding:18px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;}
+  .drawer-head h3{font-family:var(--font-head); font-size:17px;}
+  .drawer-body{flex:1; overflow-y:auto; padding:16px 20px;}
+  .drawer-foot{padding:16px 20px; border-top:1px solid var(--line);}
+  .close-x{font-size:22px; color:var(--text-dim);}
+
+  .empty-note{text-align:center; color:var(--text-dim); font-size:13px; padding:40px 0;}
+
+  .line-item{display:flex; gap:10px; padding:12px 0; border-bottom:1px solid var(--line);}
+  .line-media{width:52px; height:52px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px; background:var(--card); flex-shrink:0; overflow:hidden;}
+  .line-media img{width:100%; height:100%; object-fit:cover;}
+  .line-info{flex:1; min-width:0;}
+  .line-name{font-size:12.5px; font-weight:700;}
+  .line-meta{font-size:11px; color:var(--text-dim); margin-top:2px;}
+  .qty-row{display:flex; align-items:center; gap:8px; margin-top:7px;}
+  .qty-btn{width:22px; height:22px; border-radius:50%; background:var(--card); border:1px solid var(--line); font-size:13px; display:flex; align-items:center; justify-content:center;}
+  .qty-val{font-size:12.5px; font-weight:700; min-width:14px; text-align:center;}
+  .remove-x{margin-left:auto; font-size:11px; color:var(--danger); text-decoration:underline;}
+
+  .total-row{display:flex; justify-content:space-between; font-family:var(--font-head); font-size:16px; margin-bottom:12px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block; font-size:11.5px; font-weight:700; color:var(--text-dim); margin-bottom:5px;}
+  .field input, .field textarea{
+    width:100%; background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-size:13.5px; color:var(--text); font-family:inherit;
+  }
+  .field input:focus, .field textarea:focus{outline:2px solid var(--lime);}
+  .back-link{font-size:12.5px; color:var(--text-dim); margin-bottom:10px; display:flex; align-items:center; gap:4px;}
+
+  .size-row{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;}
+  .size-btn{
+    width:40px; height:36px; border-radius:8px; border:1.5px solid var(--line); background:var(--card);
+    font-size:12px; font-weight:700;
+  }
+  .size-btn.selected{border-color:var(--lime); background:color-mix(in srgb, var(--lime) 18%, transparent); color:var(--lime);}
+  .size-btn.soldout{opacity:.35; text-decoration:line-through; pointer-events:none;}
+  .size-guide-link{font-size:11.5px; color:var(--blue); text-decoration:underline; margin-top:4px; display:inline-block;}
+
+  /* product modal */
+  .modal{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-48%) scale(.95); opacity:0;
+    width:min(440px, 92vw); max-height:86vh; overflow-y:auto;
+    background:var(--ink2); border:1px solid var(--line); border-radius:18px;
+    z-index:72; pointer-events:none; transition:all .25s cubic-bezier(.2,.8,.2,1);
+  }
+  .modal.open{opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto;}
+  .modal-close{position:absolute; top:12px; right:14px; font-size:22px; color:var(--text-dim); z-index:2;}
+  .modal-media{aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; font-size:64px; background:linear-gradient(135deg, color-mix(in srgb, var(--purple) 30%, var(--card)), color-mix(in srgb, var(--blue) 25%, var(--card))); position:relative;}
+  .modal-media img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+  .modal-body{padding:20px;}
+  .modal-body h3{font-family:var(--font-head); font-size:18px; margin-bottom:8px;}
+  .modal-body .price{font-family:var(--font-head); font-size:20px; margin:8px 0;}
+  .modal-body p.desc{font-size:13px; color:var(--text-dim); line-height:1.6;}
+
+  .terms-modal .modal-body{font-size:12.5px; line-height:1.8; color:var(--text-dim);}
+  .terms-modal h3{color:var(--text);}
+  .terms-modal ol{padding-left:18px; margin-top:8px;}
+  .agree-row{display:flex; align-items:flex-start; gap:10px; margin-top:16px; background:var(--card); padding:12px; border-radius:10px; cursor:pointer;}
+  .agree-row input{margin-top:3px; width:16px; height:16px; accent-color:var(--lime);}
+
+  .pay-block{text-align:center; padding-top:4px;}
+  .pay-block img{width:170px; height:170px; margin:12px auto; border:1px solid var(--line); border-radius:10px;}
+  .pay-btn{display:block; width:100%; background:linear-gradient(90deg, var(--lime), var(--blue)); color:#0B0B0F; font-weight:800; padding:13px; border-radius:999px; margin-top:6px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translate(-50%,16px);
+    background:var(--card); border:1px solid var(--line); color:var(--text);
+    padding:12px 20px; border-radius:999px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:9px; z-index:90; opacity:0; pointer-events:none; transition:all .25s ease;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0);}
+  .toast .dot{width:7px; height:7px; border-radius:50%; background:var(--lime);}
+
+  .size-guide-table{width:100%; border-collapse:collapse; margin-top:10px; font-size:11.5px;}
+  .size-guide-table th, .size-guide-table td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  .placeholder-note{font-size:10.5px; color:var(--danger); margin-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="bg-glow"><span></span><span></span><span></span></div>
+
+<div class="marquee"><div class="marquee-track" id="marqueeTrack"></div></div>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <img id="logoImg" src="logo.png" alt="Lowkey Loot"
+           onerror="this.classList.add('hidden'); document.getElementById('logoText').classList.remove('hidden');">
+      <div class="brand-text hidden" id="logoText"><span class="lk">LOWKEY</span> <span class="lt">LOOT</span></div>
+    </div>
+    <div class="nav-actions">
+      <div class="lang-switch" id="langSwitch">
+        <button data-lang="en">EN</button>
+        <button data-lang="te">తె</button>
+        <button data-lang="hi">हि</button>
+      </div>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">🌙</button>
+      <button class="icon-btn cart-btn" onclick="openCart()" title="Cart">
+        🛍️<span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="sparkle" style="top:20%; left:14%;"></div>
+  <div class="sparkle" style="top:65%; left:80%; animation-delay:.6s;"></div>
+  <div class="sparkle" style="top:40%; left:50%; animation-delay:1.2s;"></div>
+  <div class="hero-eyebrow" id="heroEyebrow">Now taking orders</div>
+  <h1 id="heroHeading">Good drip, <span class="grad">lowkey prices.</span></h1>
+  <p id="heroSub">Streetwear and finds picked for you. Pay by UPI, we confirm within 24 hours.</p>
+  <div class="hero-ctas">
+    <button class="btn btn-glow" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})" id="shopNowBtn">Shop now</button>
+    <a class="btn btn-ghost" href="#about" id="aboutBtn">About the shop</a>
+  </div>
+</section>
+
+<section class="how">
+  <div class="how-grid" id="howGrid"></div>
+</section>
+
+<section class="products" id="products">
+  <h2 class="section-title" id="pickTitle">This week's picks</h2>
+  <div class="tools">
+    <input class="search-box" id="searchBox" placeholder="Search products...">
+  </div>
+  <div class="tools" id="catChips"></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section class="reviews">
+  <h2 class="section-title" id="reviewTitle">Reviews</h2>
+  <div class="reviews-box" id="reviewBox"></div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-box">
+    <h2 class="section-title" id="aboutTitle" style="margin-bottom:0;">About</h2>
+    <p id="aboutText"></p>
+    <div class="nocall" id="nocallText"></div>
+    <a class="insta-link hidden" id="instaLink" href="#" target="_blank" rel="noopener">📸 Follow on Instagram</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand"><span style="color:var(--lime)">LOWKEY</span> LOOT</div>
+  <p id="footerEmail"></p>
+  <p id="footerHours"></p>
+  <p>© Lowkey Loot. All rights reserved.</p>
+  <div class="footer-links">
+    <button onclick="openTerms()" id="footerTermsBtn">Terms</button>
+    <button onclick="openOrders()" id="footerOrdersBtn">My Orders</button>
+  </div>
+</footer>
+
+<button class="fab" onclick="openOrders()" id="ordersFab">📦 My Orders</button>
+
+<!-- overlay -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- product detail modal -->
+<div class="modal" id="productModal">
+  <button class="modal-close" onclick="closeAll()">&times;</button>
+  <div class="modal-media" id="modalMedia"></div>
+  <div class="modal-body">
+    <h3 id="modalName"></h3>
+    <p class="desc" id="modalDesc"></p>
+    <div id="modalSampleTag" class="card-sample hidden"></div>
+    <div class="price" id="modalPrice"></div>
+    <div id="modalSizes"></div>
+    <button class="add-btn" id="modalAddBtn" style="margin-top:14px;">Add to cart</button>
+  </div>
+</div>
+
+<!-- size guide modal -->
+<div class="modal" id="sizeGuideModal">
+  <button class="modal-close" onclick="closeSizeGuide()">&times;</button>
+  <div class="modal-body">
+    <h3 id="sizeGuideTitle">Size guide</h3>
+    <table class="size-guide-table">
+      <tr><th>Size</th><th>Chest (in)</th><th>Length (in)</th></tr>
+      <tr><td>S</td><td>36</td><td>26</td></tr>
+      <tr><td>M</td><td>38</td><td>27</td></tr>
+      <tr><td>L</td><td>40</td><td>28</td></tr>
+      <tr><td>XL</td><td>42</td><td>29</td></tr>
+      <tr><td>XXL</td><td>44</td><td>30</td></tr>
+    </table>
+    <p class="placeholder-note" id="sizeGuidePlaceholder">Sample measurements — replace with your real sizing before launch.</p>
+  </div>
+</div>
+
+<!-- cart drawer -->
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h3 id="cartTitle">Your cart</h3>
+    <button class="close-x" onclick="closeAll()">&times;</button>
+  </div>
+
+  <div id="cartStep">
+    <div class="drawer-body" id="cartItems"></div>
+    <div class="drawer-foot">
+      <div class="total-row"><span id="totalLabel">Total</span><span id="cartTotal">₹0</span></div>
+      <button class="btn btn-glow" style="width:100%;" id="toCheckoutBtn" onclick="goCheckout()">Checkout</button>
+    </div>
+  </div>
+
+  <div id="checkoutStep" class="hidden">
+    <div class="drawer-body">
+      <button class="back-link" onclick="backToCart()">← <span id="backLabel">Back to cart</span></button>
+      <div class="field"><label id="lblName">Full name</label><input id="custName" type="text"></div>
+      <div class="field"><label id="lblPhone">Mobile number</label><input id="custPhone" type="tel"></div>
+      <div class="field"><label id="lblEmail">Email</label><input id="custEmail" type="email"></div>
+      <div class="field"><label id="lblAddress">Delivery address</label><textarea id="custAddress"></textarea></div>
+      <div class="field"><label id="lblPincode">Pincode</label><input id="custPincode" type="text"></div>
+    </div>
+    <div class="drawer-foot">
+      <div class="total-row"><span id="totalLabel2">Total</span><span id="checkoutTotal">₹0</span></div>
+      <button class="btn btn-glow" style="width:100%;" onclick="proceedToTerms()" id="proceedBtn">Proceed to pay</button>
+    </div>
+  </div>
+
+  <div id="payStep" class="hidden">
+    <div class="drawer-body">
+      <button class="back-link" onclick="backToForm()">← <span id="backLabel2">Back</span></button>
+      <div class="pay-block">
+        <div id="payAmountLabel" style="font-family:var(--font-head); font-size:20px;"></div>
+        <img id="upiQr" alt="UPI QR code">
+        <a class="pay-btn" id="upiPayBtn" href="#" target="_blank" id="payAppLabel">Pay in UPI app</a>
+      </div>
+      <div class="field" style="margin-top:18px;">
+        <label id="lblUtr">UPI transaction ID (after paying)</label>
+        <input id="custUtr" type="text">
+      </div>
+      <p class="placeholder-note" id="confirmNote" style="color:var(--text-dim);"></p>
+    </div>
+    <div class="drawer-foot">
+      <button class="btn btn-glow" style="width:100%;" onclick="sendOrder()" id="sendOrderBtn">Send order</button>
+    </div>
+  </div>
+</div>
+
+<!-- terms modal -->
+<div class="modal terms-modal" id="termsModal">
+  <button class="modal-close" onclick="closeAll()">&times;</button>
+  <div class="modal-body">
+    <h3 id="termsTitle">Terms & Conditions</h3>
+    <ol id="termsList"></ol>
+    <label class="agree-row">
+      <input type="checkbox" id="agreeCheck">
+      <span id="agreeLabel">I have read and agree to the Terms above.</span>
+    </label>
+    <button class="btn btn-glow" style="width:100%; margin-top:16px;" id="agreeContinueBtn" disabled onclick="confirmTerms()">Continue to payment</button>
+  </div>
+</div>
+
+<!-- my orders modal -->
+<div class="modal" id="ordersModal">
+  <button class="modal-close" onclick="closeAll()">&times;</button>
+  <div class="modal-body">
+    <h3 id="ordersTitle">My Orders</h3>
+    <div id="ordersList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+/* =========================================================
+   CONFIG — edit this block for everything shop-specific
+   ========================================================= */
+const CONFIG = {
+  shopName: "Lowkey Loot",
+  email: "lowkeyloot.official@gmail.com",
+  upiId: "6301015838@ibl",
+  payeeName: "Lowkey Loot",
+  whatsapp: "",      // leave blank to keep WhatsApp hidden; fill in later to turn it on
+  instagram: "",     // leave blank to keep Instagram hidden; fill in to show it
+  currency: "₹",
+
+  hours: { en:"Online only · 9 AM – 9 PM", te:"ఆన్‌లైన్ మాత్రమే · ఉదయం 9 – రాత్రి 9", hi:"केवल ऑनलाइन · सुबह 9 – रात 9" },
+
+  tagline: {
+    en:["Now taking orders","Good drip, lowkey prices.","Streetwear and finds picked for you. Pay by UPI, we confirm within 24 hours."],
+    te:["ఆర్డర్లు తీసుకుంటున్నాం","మంచి స్టైల్, తక్కువ ధర.","మీ కోసం ఎంపిక చేసిన వస్తువులు. UPI ద్వారా చెల్లించండి, 24 గంటల్లో నిర్ధారిస్తాం."],
+    hi:["अभी ऑर्डर ले रहे हैं","अच्छा स्टाइल, कम कीमत।","आपके लिए चुने गए प्रोडक्ट्स। UPI से भुगतान करें, हम 24 घंटों में पुष्टि करेंगे।"]
+  },
+
+  about: {
+    en:"Lowkey Loot is an online-only shop — no store, just good picks delivered to your door across India.",
+    te:"లోక్‌కీ లూట్ పూర్తిగా ఆన్‌లైన్ షాప్ — దుకాణం లేదు, భారతదేశం అంతటా మీ ఇంటికి మంచి వస్తువులు చేరవేస్తాం.",
+    hi:"लोकी लूट पूरी तरह ऑनलाइन शॉप है — कोई दुकान नहीं, बस पूरे भारत में आपके घर तक अच्छी चीज़ें पहुंचाते हैं।"
+  },
+
+  nocall: {
+    en:"No calls please. Email us at lowkeyloot.official@gmail.com. We reply within 24 hours, and as soon as we can.",
+    te:"దయచేసి కాల్ చేయవద్దు. lowkeyloot.official@gmail.com కు ఇమెయిల్ చేయండి. మేము 24 గంటల్లో, వీలైనంత త్వరగా స్పందిస్తాం.",
+    hi:"कृपया कॉल न करें। lowkeyloot.official@gmail.com पर ईमेल करें। हम 24 घंटों में, जितनी जल्दी हो सके जवाब देंगे।"
+  },
+
+  howItWorks: {
+    en:["Pick your items","Pay by UPI","Agree to Terms","Confirmation within 24 hours"],
+    te:["వస్తువులు ఎంచుకోండి","UPI ద్వారా చెల్లించండి","నిబంధనలకు అంగీకరించండి","24 గంటల్లో నిర్ధారణ"],
+    hi:["अपने आइटम चुनें","UPI से भुगतान करें","नियमों से सहमत हों","24 घंटों में पुष्टि"]
+  },
+
+  marquee: {
+    en:"Free shipping included · Delivery in India only · UPI payment only · Confirmation within 24 hours",
+    te:"షిప్పింగ్ ఉచితం · భారతదేశంలో మాత్రమే డెలివరీ · UPI చెల్లింపు మాత్రమే · 24 గంటల్లో నిర్ధారణ",
+    hi:"मुफ्त शिपिंग शामिल · केवल भारत में डिलीवरी · केवल UPI भुगतान · 24 घंटों में पुष्टि"
+  },
+
+  // Terms — point 5 (refund) and point 6 (availability) are the ones
+  // added during planning. Telugu/Hindi versions should be checked by
+  // a native speaker before going live.
+  terms: {
+    en:[
+      "No returns.",
+      "No cancellation after payment.",
+      "No refund or replacement for a change of mind.",
+      "Wrong or damaged item: send an unboxing video or photos within 48 hours — we review each case.",
+      "Every order is reviewed by the shop owner after payment, and may be accepted or declined. If accepted, you'll get a confirmation email within 24 hours.",
+      "If we can't fulfil your order (out of stock or price change), we refund 100% of your money to the same UPI account within 7 days.",
+      "Prices and stock are subject to availability.",
+      "Shipping is included in the price, and prices may change.",
+      "Wrong address or phone number is the customer's responsibility.",
+      "Privacy: your details are used only to deliver your order and are never shared."
+    ],
+    te:[
+      "రిటర్న్‌లు లేవు.",
+      "చెల్లింపు తర్వాత రద్దు చేయడం సాధ్యం కాదు.",
+      "మనసు మార్చుకుంటే రీఫండ్ లేదా మార్పిడి లేదు.",
+      "తప్పు లేదా దెబ్బతిన్న వస్తువు: 48 గంటల్లో అన్‌బాక్సింగ్ వీడియో లేదా ఫోటోలు పంపండి — మేము ప్రతి కేసును పరిశీలిస్తాం.",
+      "చెల్లింపు తర్వాత ప్రతి ఆర్డర్‌ను షాప్ యజమాని సమీక్షిస్తారు, ఆమోదించవచ్చు లేదా తిరస్కరించవచ్చు. ఆమోదిస్తే, 24 గంటల్లో నిర్ధారణ ఇమెయిల్ వస్తుంది.",
+      "మేము మీ ఆర్డర్‌ను పూర్తి చేయలేకపోతే (స్టాక్ లేకపోవడం లేదా ధర మారడం), 7 రోజుల్లో అదే UPI ఖాతాకు 100% డబ్బు వాపసు చేస్తాం.",
+      "ధరలు మరియు స్టాక్ లభ్యతపై ఆధారపడి ఉంటాయి.",
+      "షిప్పింగ్ ధరలో చేర్చబడింది, ధరలు మారవచ్చు.",
+      "తప్పు చిరునామా లేదా ఫోన్ నంబర్ బాధ్యత కస్టమర్‌దే.",
+      "గోప్యత: మీ వివరాలు మీ ఆర్డర్‌ను డెలివరీ చేయడానికి మాత్రమే ఉపయోగించబడతాయి, ఎవరితోనూ పంచుకోబడవు."
+    ],
+    hi:[
+      "कोई रिटर्न नहीं।",
+      "भुगतान के बाद रद्द नहीं किया जा सकता।",
+      "मन बदलने पर रिफंड या बदलाव नहीं।",
+      "गलत या क्षतिग्रस्त सामान: 48 घंटों के अंदर अनबॉक्सिंग वीडियो या फोटो भेजें — हम हर मामले की समीक्षा करेंगे।",
+      "भुगतान के बाद हर ऑर्डर की समीक्षा दुकान मालिक करता है, और उसे स्वीकार या अस्वीकार किया जा सकता है। स्वीकार होने पर 24 घंटों में पुष्टि ईमेल मिलेगी।",
+      "अगर हम आपका ऑर्डर पूरा नहीं कर पाते (स्टॉक खत्म या कीमत बदलने पर), तो हम 7 दिनों के भीतर उसी UPI खाते में 100% पैसा वापस करेंगे।",
+      "कीमतें और स्टॉक उपलब्धता के अधीन हैं।",
+      "शिपिंग कीमत में शामिल है, और कीमतें बदल सकती हैं।",
+      "गलत पता या फोन नंबर की ज़िम्मेदारी ग्राहक की है।",
+      "गोपनीयता: आपकी जानकारी केवल ऑर्डर डिलीवर करने के लिए इस्तेमाल होती है, कभी साझा नहीं की जाती।"
+    ]
+  },
+
+  categories: ["All","Fashion","Gadgets","Home","Gifts"],
+
+  // PRODUCTS — sample:true shows "Sample product"/"Example price" labels.
+  // Set sample:false once it's a real product you're actually selling.
+  // image: leave "" to show the emoji instead of a photo.
+  products: [
+    { id:"p1", category:"Fashion", sample:true, soldOut:false, price:899, image:"", emoji:"🧥",
+      name:{en:"Oversized Hoodie",te:"ఓవర్‌సైజ్డ్ హూడీ",hi:"ओवरसाइज़्ड हुडी"},
+      desc:{en:"Heavyweight cotton hoodie, relaxed fit.",te:"హెవీవెయిట్ కాటన్ హూడీ, రిలాక్స్డ్ ఫిట్.",hi:"हैवीवेट कॉटन हुडी, रिलैक्स्ड फिट।"},
+      sizes:["S","M","L","XL","XXL"] },
+    { id:"p2", category:"Fashion", sample:true, soldOut:false, price:499, image:"", emoji:"👕",
+      name:{en:"Graphic Tee",te:"గ్రాఫిక్ టీ",hi:"ग्राफिक टी-शर्ट"},
+      desc:{en:"Soft cotton tee with a bold front print.",te:"బోల్డ్ ఫ్రంట్ ప్రింట్‌తో సాఫ్ట్ కాటన్ టీ.",hi:"बोल्ड फ्रंट प्रिंट के साथ सॉफ्ट कॉटन टी।"},
+      sizes:["S","M","L","XL","XXL"] },
+    { id:"p3", category:"Fashion", sample:true, soldOut:false, price:349, image:"", emoji:"🧢",
+      name:{en:"Snapback Cap",te:"స్నాప్‌బ్యాక్ క్యాప్",hi:"स्नैपबैक कैप"},
+      desc:{en:"Adjustable cap, free size fits most.",te:"సర్దుబాటు చేయగల క్యాప్, ఫ్రీ సైజ్ చాలా మందికి సరిపోతుంది.",hi:"एडजस्टेबल कैप, फ्री साइज़ ज़्यादातर पर फिट।"},
+      sizes:["Free size"] },
+    { id:"p4", category:"Fashion", sample:true, soldOut:false, price:1199, image:"", emoji:"🎒",
+      name:{en:"Street Backpack",te:"స్ట్రీట్ బ్యాక్‌ప్యాక్",hi:"स्ट्रीट बैकपैक"},
+      desc:{en:"Durable backpack with laptop sleeve.",te:"ల్యాప్‌టాప్ స్లీవ్‌తో మన్నికైన బ్యాక్‌ప్యాక్.",hi:"लैपटॉप स्लीव के साथ मज़बूत बैकपैक।"},
+      sizes:[] },
+    { id:"p5", category:"Fashion", sample:true, soldOut:false, price:1599, image:"", emoji:"👟",
+      name:{en:"Chunky Sneakers",te:"చంకీ స్నీకర్స్",hi:"चंकी स्नीकर्स"},
+      desc:{en:"Everyday sneakers with a bold sole.",te:"బోల్డ్ సోల్‌తో రోజువారీ స్నీకర్స్.",hi:"बोल्ड सोल के साथ रोज़मर्रा के स्नीकर्स।"},
+      sizes:["6","7","8","9","10"] },
+    { id:"p6", category:"Gadgets", sample:true, soldOut:false, price:1299, image:"", emoji:"🎧",
+      name:{en:"Wireless Earbuds",te:"వైర్‌లెస్ ఇయర్‌బడ్స్",hi:"वायरलेस ईयरबड्स"},
+      desc:{en:"Bluetooth earbuds with charging case.",te:"ఛార్జింగ్ కేస్‌తో బ్లూటూత్ ఇయర్‌బడ్స్.",hi:"चार्जिंग केस के साथ ब्लूटूथ ईयरबड्स।"},
+      sizes:[] },
+    { id:"p7", category:"Gadgets", sample:true, soldOut:false, price:249, image:"", emoji:"📱",
+      name:{en:"Phone Back Cover",te:"ఫోన్ బ్యాక్ కవర్",hi:"फोन बैक कवर"},
+      desc:{en:"Shockproof cover, custom designs available.",te:"షాక్‌ప్రూఫ్ కవర్, కస్టమ్ డిజైన్లు అందుబాటులో ఉన్నాయి.",hi:"शॉकप्रूफ़ कवर, कस्टम डिज़ाइन उपलब्ध।"},
+      sizes:[] },
+    { id:"p8", category:"Home", sample:true, soldOut:false, price:399, image:"", emoji:"🍶",
+      name:{en:"Steel Water Bottle",te:"స్టీల్ వాటర్ బాటిల్",hi:"स्टील वॉटर बॉटल"},
+      desc:{en:"1-litre insulated steel bottle.",te:"1-లీటర్ ఇన్సులేటెడ్ స్టీల్ బాటిల్.",hi:"1-लीटर इंसुलेटेड स्टील बॉटल।"},
+      sizes:[] },
+    { id:"p9", category:"Home", sample:true, soldOut:false, price:349, image:"", emoji:"🕯️",
+      name:{en:"Scented Candle",te:"సువాసన కొవ్వొత్తి",hi:"सुगंधित मोमबत्ती"},
+      desc:{en:"Long-burning soy candle.",te:"ఎక్కువసేపు మండే సోయా కొవ్వొత్తి.",hi:"लंबे समय तक जलने वाली सोया मोमबत्ती।"},
+      sizes:[] },
+    { id:"p10", category:"Gifts", sample:true, soldOut:false, price:699, image:"", emoji:"💡",
+      name:{en:"LED Desk Lamp",te:"LED డెస్క్ ల్యాంప్",hi:"LED डेस्क लैंप"},
+      desc:{en:"Touch-control lamp with 3 brightness modes.",te:"3 బ్రైట్‌నెస్ మోడ్‌లతో టచ్-కంట్రోల్ ల్యాంప్.",hi:"3 ब्राइटनेस मोड के साथ टच-कंट्रोल लैंप।"},
+      sizes:[] }
+  ]
+};
+
+/* =========================================================
+   APP STATE
+   ========================================================= */
+let lang = "en";
+let cart = {}; // key: id|size -> {id, size, qty}
+let activeCategory = "All";
+let searchTerm = "";
+let pendingProductId = null;
+let termsAgreed = false;
+
+const UI = {
+  en:{ cartTitle:"Your cart", back:"Back to cart", backShort:"Back", total:"Total",
+       name:"Full name", phone:"Mobile number", email:"Email", address:"Delivery address", pincode:"Pincode",
+       proceed:"Proceed to pay", checkout:"Checkout", utr:"UPI transaction ID (after paying)",
+       sendOrder:"Send order", payApp:"Pay in UPI app",
+       confirmNote:"Enter your UPI transaction ID after paying, then tap Send order.",
+       termsTitle:"Terms & Conditions", agree:"I have read and agree to the Terms above.",
+       continuePay:"Continue to payment", ordersTitle:"My Orders", noOrders:"No orders yet.",
+       pickTitle:"This week's picks", reviewTitle:"Reviews",
+       noReviews:"No reviews yet — be the first to order and leave one!",
+       aboutTitle:"About", selectSize:"Please select a size", added:"Added to cart",
+       emptyCart:"Your cart is empty.", footerOrders:"My Orders", footerTerms:"Terms",
+       thanksMsg:"Thanks! We got your order. Please wait for our confirmation email within 24 hours.",
+       fillRequired:"Please fill your name, mobile number, address and pincode", sampleTag:"Sample product", exampleTag:"Example price",
+       soldOutTag:"Sold out", search:"Search products..." },
+  te:{ cartTitle:"మీ కార్ట్", back:"కార్ట్‌కి తిరిగి", backShort:"వెనక్కి", total:"మొత్తం",
+       name:"పూర్తి పేరు", phone:"మొబైల్ నంబర్", email:"ఇమెయిల్", address:"డెలివరీ చిరునామా", pincode:"పిన్‌కోడ్",
+       proceed:"చెల్లింపుకు వెళ్ళండి", checkout:"చెక్అవుట్", utr:"UPI లావాదేవీ ID (చెల్లించిన తర్వాత)",
+       sendOrder:"ఆర్డర్ పంపండి", payApp:"UPI యాప్‌లో చెల్లించండి",
+       confirmNote:"చెల్లించిన తర్వాత మీ UPI లావాదేవీ IDని నమోదు చేసి, ఆర్డర్ పంపండి నొక్కండి.",
+       termsTitle:"నిబంధనలు", agree:"పైన ఉన్న నిబంధనలను చదివాను మరియు అంగీకరిస్తున్నాను.",
+       continuePay:"చెల్లింపుకు కొనసాగండి", ordersTitle:"నా ఆర్డర్లు", noOrders:"ఇంకా ఆర్డర్లు లేవు.",
+       pickTitle:"ఈ వారం ఎంపికలు", reviewTitle:"సమీక్షలు",
+       noReviews:"ఇంకా సమీక్షలు లేవు — మొదట ఆర్డర్ చేసి సమీక్ష ఇవ్వండి!",
+       aboutTitle:"గురించి", selectSize:"దయచేసి సైజ్ ఎంచుకోండి", added:"కార్ట్‌కి జోడించబడింది",
+       emptyCart:"మీ కార్ట్ ఖాళీగా ఉంది.", footerOrders:"నా ఆర్డర్లు", footerTerms:"నిబంధనలు",
+       thanksMsg:"ధన్యవాదాలు! మీ ఆర్డర్ అందింది. దయచేసి 24 గంటల్లో మా నిర్ధారణ ఇమెయిల్ కోసం వేచి ఉండండి.",
+       fillRequired:"దయచేసి మీ పేరు, మొబైల్ నంబర్, చిరునామా మరియు పిన్‌కోడ్ నింపండి", sampleTag:"నమూనా వస్తువు", exampleTag:"ఉదాహరణ ధర",
+       soldOutTag:"అయిపోయింది", search:"వస్తువులను వెతకండి..." },
+  hi:{ cartTitle:"आपका कार्ट", back:"कार्ट पर वापस", backShort:"वापस", total:"कुल",
+       name:"पूरा नाम", phone:"मोबाइल नंबर", email:"ईमेल", address:"डिलीवरी पता", pincode:"पिनकोड",
+       proceed:"भुगतान के लिए आगे बढ़ें", checkout:"चेकआउट", utr:"UPI ट्रांज़ैक्शन ID (भुगतान के बाद)",
+       sendOrder:"ऑर्डर भेजें", payApp:"UPI ऐप में भुगतान करें",
+       confirmNote:"भुगतान के बाद अपनी UPI ट्रांज़ैक्शन ID डालें, फिर ऑर्डर भेजें दबाएं।",
+       termsTitle:"नियम व शर्तें", agree:"मैंने ऊपर दिए गए नियम पढ़ लिए हैं और सहमत हूं।",
+       continuePay:"भुगतान जारी रखें", ordersTitle:"मेरे ऑर्डर", noOrders:"अभी तक कोई ऑर्डर नहीं।",
+       pickTitle:"इस हफ्ते की पसंद", reviewTitle:"समीक्षाएं",
+       noReviews:"अभी तक कोई समीक्षा नहीं — ऑर्डर करने वाले पहले व्यक्ति बनें!",
+       aboutTitle:"हमारे बारे में", selectSize:"कृपया एक साइज़ चुनें", added:"कार्ट में जोड़ा गया",
+       emptyCart:"आपका कार्ट खाली है।", footerOrders:"मेरे ऑर्डर", footerTerms:"नियम",
+       thanksMsg:"धन्यवाद! हमें आपका ऑर्डर मिल गया। कृपया 24 घंटों में हमारे पुष्टि ईमेल का इंतज़ार करें।",
+       fillRequired:"कृपया अपना नाम, मोबाइल नंबर, पता और पिनकोड भरें", sampleTag:"सैंपल प्रोडक्ट", exampleTag:"उदाहरण कीमत",
+       soldOutTag:"स्टॉक खत्म", search:"प्रोडक्ट खोजें..." }
+};
+
+function t(key){ return UI[lang][key]; }
+function fmt(n){ return CONFIG.currency + n.toLocaleString("en-IN"); }
+function cartKey(id, size){ return id + "|" + (size || ""); }
+
+/* ---------- init / language / theme ---------- */
+function applyLanguage(){
+  document.querySelectorAll("#langSwitch button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+  document.getElementById("heroEyebrow").textContent = CONFIG.tagline[lang][0];
+  document.getElementById("heroHeading").innerHTML = lang === "en"
+    ? 'Good drip, <span class="grad">lowkey prices.</span>'
+    : CONFIG.tagline[lang][1];
+  document.getElementById("heroSub").textContent = CONFIG.tagline[lang][2];
+  document.getElementById("pickTitle").textContent = t("pickTitle");
+  document.getElementById("reviewTitle").textContent = t("reviewTitle");
+  document.getElementById("reviewBox").textContent = t("noReviews");
+  document.getElementById("aboutTitle").textContent = t("aboutTitle");
+  document.getElementById("aboutText").textContent = CONFIG.about[lang];
+  document.getElementById("nocallText").textContent = CONFIG.nocall[lang];
+  document.getElementById("footerEmail").textContent = "✉️ " + CONFIG.email;
+  document.getElementById("footerHours").textContent = CONFIG.hours[lang];
+  document.getElementById("footerTermsBtn").textContent = t("footerTerms");
+  document.getElementById("footerOrdersBtn").textContent = t("footerOrders");
+  document.getElementById("ordersFab").textContent = "📦 " + t("footerOrders");
+  document.getElementById("cartTitle").textContent = t("cartTitle");
+  document.getElementById("backLabel").textContent = t("back");
+  document.getElementById("backLabel2").textContent = t("backShort");
+  document.getElementById("totalLabel").textContent = t("total");
+  document.getElementById("totalLabel2").textContent = t("total");
+  document.getElementById("lblName").textContent = t("name");
+  document.getElementById("lblPhone").textContent = t("phone");
+  document.getElementById("lblEmail").textContent = t("email");
+  document.getElementById("lblAddress").textContent = t("address");
+  document.getElementById("lblPincode").textContent = t("pincode");
+  document.getElementById("proceedBtn").textContent = t("proceed");
+  document.getElementById("lblUtr").textContent = t("utr");
+  document.getElementById("sendOrderBtn").textContent = t("sendOrder");
+  document.getElementById("confirmNote").textContent = t("confirmNote");
+  document.getElementById("termsTitle").textContent = t("termsTitle");
+  document.getElementById("agreeLabel").textContent = t("agree");
+  document.getElementById("agreeContinueBtn").textContent = t("continuePay");
+  document.getElementById("ordersTitle").textContent = t("ordersTitle");
+  document.getElementById("searchBox").placeholder = t("search");
+
+  const marqueeHalf = `<span>${CONFIG.marquee[lang]}</span>`.repeat(4);
+  document.getElementById("marqueeTrack").innerHTML = marqueeHalf + marqueeHalf;
+
+  renderHow();
+  renderCategories();
+  renderProducts();
+  renderTerms();
+  updateCartUI();
+
+  if (CONFIG.instagram){
+    document.getElementById("instaLink").href = CONFIG.instagram;
+    document.getElementById("instaLink").classList.remove("hidden");
+  }
+}
+
+document.getElementById("langSwitch").addEventListener("click", e => {
+  const btn = e.target.closest("button[data-lang]");
+  if (!btn) return;
+  lang = btn.dataset.lang;
+  applyLanguage();
+});
+
+document.getElementById("themeBtn").addEventListener("click", () => {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  document.documentElement.setAttribute("data-theme", isLight ? "dark" : "light");
+  document.getElementById("themeBtn").textContent = isLight ? "🌙" : "☀️";
+});
+
+/* ---------- how it works ---------- */
+function renderHow(){
+  const el = document.getElementById("howGrid");
+  el.innerHTML = CONFIG.howItWorks[lang].map((step,i) => `
+    <div class="how-step"><div class="how-num">${i+1}</div><p>${step}</p></div>
+  `).join("");
+  revealObserve(el.querySelectorAll(".how-step"));
+}
+
+/* ---------- categories / search ---------- */
+function renderCategories(){
+  const el = document.getElementById("catChips");
+  el.innerHTML = CONFIG.categories.map(c => `
+    <button class="cat-chip ${c===activeCategory?'active':''}" data-cat="${c}">${c}</button>
+  `).join("");
+  el.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    activeCategory = b.dataset.cat; renderCategories(); renderProducts();
+  }));
+}
+document.getElementById("searchBox").addEventListener("input", e => {
+  searchTerm = e.target.value.trim().toLowerCase(); renderProducts();
+});
+
+/* ---------- products grid ---------- */
+function filteredProducts(){
+  return CONFIG.products.filter(p => {
+    const inCat = activeCategory === "All" || p.category === activeCategory;
+    const name = p.name[lang].toLowerCase();
+    const inSearch = !searchTerm || name.includes(searchTerm);
+    return inCat && inSearch;
+  });
+}
+
+function mediaHtml(p){
+  return p.image ? `<img src="${p.image}" alt="${p.name[lang]}" loading="lazy">` : p.emoji;
+}
+
+function renderProducts(){
+  const el = document.getElementById("grid");
+  const items = filteredProducts();
+  el.innerHTML = items.map(p => `
+    <div class="card ${p.soldOut?'soldout':''}" data-id="${p.id}">
+      <div class="card-media" onclick="openProduct('${p.id}')">
+        ${mediaHtml(p)}
+        ${p.sample ? `<span class="tag">${t('sampleTag')}</span>` : ""}
+        ${p.soldOut ? `<span class="tag tag-soldout">${t('soldOutTag')}</span>` : ""}
+      </div>
+      <div class="card-body">
+        <div class="card-name" onclick="openProduct('${p.id}')">${p.name[lang]}</div>
+        ${p.sample ? `<div class="card-sample">${t('exampleTag')}</div>` : ""}
+        <div class="card-price">${fmt(p.price)}</div>
+        <button class="add-btn" id="add-${p.id}" ${p.soldOut?'disabled':''} onclick="quickAdd('${p.id}')">
+          ${p.soldOut ? t('soldOutTag') : "+"}
+        </button>
+      </div>
+    </div>
+  `).join("");
+  revealObserve(el.querySelectorAll(".card"));
+}
+
+function quickAdd(id){
+  const p = CONFIG.products.find(p => p.id === id);
+  if (p.sizes && p.sizes.length){ openProduct(id); return; }
+  addToCart(id, null);
+  flashAdded(document.getElementById("add-" + id));
+}
+
+function flashAdded(btn){
+  if (!btn) return;
+  const original = btn.textContent;
+  btn.textContent = "✓";
+  btn.classList.add("added");
+  setTimeout(() => { btn.textContent = original; btn.classList.remove("added"); }, 900);
+}
+
+/* ---------- product modal ---------- */
+function openProduct(id){
+  pendingProductId = id;
+  const p = CONFIG.products.find(p => p.id === id);
+  document.getElementById("modalMedia").innerHTML = mediaHtml(p);
+  document.getElementById("modalName").textContent = p.name[lang];
+  document.getElementById("modalDesc").textContent = p.desc[lang];
+  document.getElementById("modalPrice").textContent = fmt(p.price);
+  const sampleTag = document.getElementById("modalSampleTag");
+  if (p.sample){ sampleTag.textContent = t('sampleTag') + " · " + t('exampleTag'); sampleTag.classList.remove("hidden"); }
+  else sampleTag.classList.add("hidden");
+
+  const sizesEl = document.getElementById("modalSizes");
+  if (p.sizes && p.sizes.length){
+    sizesEl.innerHTML = `
+      <div class="size-row" id="sizeRow">
+        ${p.sizes.map(s => `<button class="size-btn" data-size="${s}">${s}</button>`).join("")}
+      </div>
+      ${p.category==='Fashion' ? `<a class="size-guide-link" onclick="openSizeGuide()">📏 Size guide</a>` : ""}
+    `;
+    sizesEl.querySelectorAll(".size-btn").forEach(b => b.addEventListener("click", () => {
+      sizesEl.querySelectorAll(".size-btn").forEach(x => x.classList.remove("selected"));
+      b.classList.add("selected");
+    }));
+  } else {
+    sizesEl.innerHTML = "";
+  }
+
+  document.getElementById("modalAddBtn").onclick = () => {
+    let size = null;
+    if (p.sizes && p.sizes.length){
+      const sel = sizesEl.querySelector(".size-btn.selected");
+      if (!sel){
+        sizesEl.querySelector(".size-row").classList.add("shake");
+        setTimeout(() => sizesEl.querySelector(".size-row").classList.remove("shake"), 400);
+        showToast(t("selectSize"));
+        return;
+      }
+      size = sel.dataset.size;
+    }
+    addToCart(p.id, size);
+    closeAll();
+  };
+
+  showModal("productModal");
+}
+
+function openSizeGuide(){ showModal("sizeGuideModal"); }
+function closeSizeGuide(){ closeAll(); }
+
+/* ---------- cart ---------- */
+function addToCart(id, size){
+  const key = cartKey(id, size);
+  if (!cart[key]) cart[key] = { id, size, qty: 0 };
+  cart[key].qty += 1;
+  updateCartUI();
+  const p = CONFIG.products.find(p => p.id === id);
+  showToast(p.name[lang] + " — " + t("added"));
+}
+function changeQty(key, delta){
+  cart[key].qty += delta;
+  if (cart[key].qty <= 0) delete cart[key];
+  updateCartUI(); renderCartItems();
+}
+function removeItem(key){ delete cart[key]; updateCartUI(); renderCartItems(); }
+
+function cartEntries(){ return Object.entries(cart); }
+function cartCount(){ return cartEntries().reduce((a,[,v]) => a+v.qty, 0); }
+function cartTotal(){
+  return cartEntries().reduce((sum,[,v]) => {
+    const p = CONFIG.products.find(p => p.id === v.id);
+    return sum + (p ? p.price * v.qty : 0);
+  }, 0);
+}
+function updateCartUI(){
+  document.getElementById("cartCount").textContent = cartCount();
+  document.getElementById("cartTotal").textContent = fmt(cartTotal());
+  document.getElementById("checkoutTotal").textContent = fmt(cartTotal());
+}
+function renderCartItems(){
+  const el = document.getElementById("cartItems");
+  const entries = cartEntries();
+  if (!entries.length){ el.innerHTML = `<div class="empty-note">${t('emptyCart')}</div>`; return; }
+  el.innerHTML = entries.map(([key, v]) => {
+    const p = CONFIG.products.find(p => p.id === v.id);
+    return `
+      <div class="line-item">
+        <div class="line-media">${mediaHtml(p)}</div>
+        <div class="line-info">
+          <div class="line-name">${p.name[lang]}</div>
+          <div class="line-meta">${fmt(p.price)}${v.size ? " · " + v.size : ""}</div>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="changeQty('${key}',-1)">−</button>
+            <span class="qty-val">${v.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${key}',1)">+</button>
+            <button class="remove-x" onclick="removeItem('${key}')">✕</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ---------- drawer / modal plumbing ---------- */
+function showModal(id){
+  document.getElementById("overlay").classList.add("open");
+  document.getElementById(id).classList.add("open");
+}
+function closeAll(){
+  document.getElementById("overlay").classList.remove("open");
+  document.querySelectorAll(".modal, .drawer").forEach(m => m.classList.remove("open"));
+}
+function openCart(){
+  document.getElementById("cartStep").classList.remove("hidden");
+  document.getElementById("checkoutStep").classList.add("hidden");
+  document.getElementById("payStep").classList.add("hidden");
+  renderCartItems();
+  document.getElementById("overlay").classList.add("open");
+  document.getElementById("cartDrawer").classList.add("open");
+}
+function goCheckout(){
+  if (!cartCount()) return;
+  document.getElementById("cartStep").classList.add("hidden");
+  document.getElementById("checkoutStep").classList.remove("hidden");
+}
+function backToCart(){
+  document.getElementById("checkoutStep").classList.add("hidden");
+  document.getElementById("cartStep").classList.remove("hidden");
+}
+function backToForm(){
+  document.getElementById("payStep").classList.add("hidden");
+  document.getElementById("checkoutStep").classList.remove("hidden");
+}
+
+/* ---------- terms ---------- */
+function renderTerms(){
+  document.getElementById("termsList").innerHTML = CONFIG.terms[lang].map(line => `<li>${line}</li>`).join("");
+}
+function openTerms(){ showModal("termsModal"); }
+document.getElementById("agreeCheck").addEventListener("change", e => {
+  document.getElementById("agreeContinueBtn").disabled = !e.target.checked;
+});
+
+function proceedToTerms(){
+  const name = document.getElementById("custName").value.trim();
+  const phone = document.getElementById("custPhone").value.trim();
+  const address = document.getElementById("custAddress").value.trim();
+  const pincode = document.getElementById("custPincode").value.trim();
+  if (!name || !phone || !address || !pincode){
+    showToast(t("fillRequired")); return;
+  }
+  document.getElementById("agreeCheck").checked = false;
+  document.getElementById("agreeContinueBtn").disabled = true;
+  showModal("termsModal");
+}
+
+function confirmTerms(){
+  termsAgreed = true;
+  closeAll();
+  document.getElementById("checkoutStep").classList.add("hidden");
+  document.getElementById("payStep").classList.remove("hidden");
+  document.getElementById("overlay").classList.add("open");
+  document.getElementById("cartDrawer").classList.add("open");
+
+  const total = cartTotal();
+  document.getElementById("payAmountLabel").textContent = fmt(total);
+  const upiLink = "upi://pay?" + new URLSearchParams({
+    pa: CONFIG.upiId, pn: CONFIG.payeeName, am: String(total), cu: "INR",
+    tn: "Order payment - " + CONFIG.shopName
+  }).toString();
+  document.getElementById("upiPayBtn").href = upiLink;
+  document.getElementById("upiPayBtn").textContent = t("payApp");
+  document.getElementById("upiQr").src = "https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=" + encodeURIComponent(upiLink);
+}
+
+/* ---------- send order ---------- */
+function orderItemsText(){
+  return cartEntries().map(([,v]) => {
+    const p = CONFIG.products.find(p => p.id === v.id);
+    return `${p.name.en} ${v.size ? "(" + v.size + ") " : ""}x${v.qty} — ${fmt(p.price * v.qty)}`;
+  }).join("\n");
+}
+
+function saveOrderLocal(order){
+  const list = JSON.parse(localStorage.getItem("lowkeyloot_orders") || "[]");
+  list.unshift(order);
+  localStorage.setItem("lowkeyloot_orders", JSON.stringify(list.slice(0,20)));
+}
+
+function sendOrder(){
+  const name = document.getElementById("custName").value.trim();
+  const phone = document.getElementById("custPhone").value.trim();
+  const email = document.getElementById("custEmail").value.trim();
+  const address = document.getElementById("custAddress").value.trim();
+  const pincode = document.getElementById("custPincode").value.trim();
+  const utr = document.getElementById("custUtr").value.trim();
+
+  if (!cartCount()) return;
+  const total = cartTotal();
+  const items = orderItemsText();
+
+  const subject = "New order - " + CONFIG.shopName;
+  const body =
+`Name: ${name}
+Phone: ${phone}
+Email: ${email || "not provided"}
+Address: ${address}
+Pincode: ${pincode}
+UPI transaction ID: ${utr || "not entered yet"}
+
+Items:
+${items}
+
+Total: ${fmt(total)}`;
+
+  window.location.href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+
+  saveOrderLocal({
+    date: new Date().toLocaleString("en-IN"),
+    items: cartEntries().map(([,v]) => {
+      const p = CONFIG.products.find(p => p.id === v.id);
+      return { name: p.name.en, size: v.size, qty: v.qty, price: p.price };
+    }),
+    total, utr, status: "Pending confirmation"
+  });
+
+  cart = {};
+  updateCartUI();
+  closeAll();
+  showToast(t("thanksMsg"));
+}
+
+/* ---------- my orders ---------- */
+function openOrders(){
+  const list = JSON.parse(localStorage.getItem("lowkeyloot_orders") || "[]");
+  const el = document.getElementById("ordersList");
+  if (!list.length){ el.innerHTML = `<p style="color:var(--text-dim); font-size:13px;">${t('noOrders')}</p>`; }
+  else {
+    el.innerHTML = list.map(o => `
+      <div style="border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:10px; font-size:12.5px;">
+        <div style="color:var(--text-dim); margin-bottom:6px;">${o.date} · <span style="color:var(--lime)">${o.status}</span></div>
+        ${o.items.map(it => `<div>${it.name} ${it.size?`(${it.size})`:""} x${it.qty}</div>`).join("")}
+        <div style="margin-top:6px; font-weight:700;">${t('total')}: ${fmt(o.total)}</div>
+      </div>
+    `).join("");
+  }
+  showModal("ordersModal");
+}
+
+/* ---------- toast ---------- */
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(window._t);
+  window._t = setTimeout(() => toast.classList.remove("show"), 2300);
+}
+
+/* ---------- scroll reveal ---------- */
+function revealObserve(nodes){
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add("visible"); io.unobserve(e.target); } });
+  }, { threshold:.15 });
+  nodes.forEach(n => io.observe(n));
+}
+
+/* ---------- boot ---------- */
+applyLanguage();
+</script>
+
+<!--
+==================================================================
+  FULL SETUP GUIDE
+==================================================================
+
+1. LOGO
+   - Save your logo as exactly "logo.png" and upload it to GitHub
+     in the same folder as index.html (the repo's root).
+   - Until you do, a gradient text logo shows automatically — the
+     site works fine either way.
+
+2. PRODUCTS
+   - Each product lives in CONFIG.products. To add a real one:
+     copy a block, fill in name/desc for en/te/hi, price, category,
+     sizes (or [] for none), and set sample:false (this removes the
+     "Sample product"/"Example price" labels).
+   - image: "" shows the emoji. To use a real photo, upload it to
+     an "images" folder on GitHub and set image:"images/yourfile.jpg"
+     (own/permitted photos only — not Flipkart/Amazon photos).
+   - soldOut:true greys the card out and disables Add to cart.
+
+3. SIZE GUIDE NUMBERS
+   - The size guide table (chest/length for S–XXL) currently has
+     placeholder sample numbers. Replace them with your real
+     measurements before launch — search for "size-guide-table" in
+     this file.
+
+4. TELUGU & HINDI TEXT
+   - All Telugu and Hindi text (Terms, UI labels, product names)
+     was machine-translated. Please have a native speaker check it
+     before going live — search CONFIG.terms, UI.te, UI.hi, and
+     each product's te/hi fields to edit.
+
+5. WHATSAPP (currently hidden)
+   - CONFIG.whatsapp is blank on purpose because the number is
+     banned. When you have a working number, this file doesn't yet
+     have WhatsApp UI built in — tell me when you're ready and I'll
+     add the WhatsApp button + order option back in using the new
+     number.
+
+6. INSTAGRAM (currently hidden)
+   - Fill in CONFIG.instagram with your profile link and the
+     "Follow on Instagram" link appears automatically on the About
+     section.
+
+7. UPI PAYMENTS
+   - CONFIG.upiId and payeeName are already set to yours. The QR
+     code and "Pay in UPI app" button always show the live cart
+     total — nothing to configure.
+   - This is a payment REQUEST, not a verified payment confirmation.
+     You must check your UPI app yourself and match it against the
+     UPI transaction ID the customer enters at checkout.
+
+8. HOW ORDERS REACH YOU
+   - There's no WhatsApp hookup yet (see point 5), so "Send order"
+     opens the customer's email app with every detail pre-filled —
+     they still need to tap Send themselves. Some customers may not
+     finish this step, so always check your UPI app for payments too,
+     not just your inbox.
+
+9. HOSTING — GitHub Pages (free)
+   1. Create a free account at github.com.
+   2. New repository → name it (e.g. lowkey-loot) → Public → Create.
+   3. "uploading an existing file" → upload index.html (and logo.png,
+      and an images folder if you have product photos) → Commit.
+   4. Settings → Pages → Source: Deploy from a branch → branch: main,
+      folder: / (root) → Save.
+   5. Wait 1–2 minutes, refresh — your live link appears:
+      https://YOURUSERNAME.github.io/lowkey-loot/
+   6. To update later: edit the file on GitHub (pencil icon) or
+      upload a new version over the old one, then Commit.
+
+10. WHAT THIS FILE CAN'T DO
+   - No customer accounts/login, no real-time order tracking, no
+     automatic payment verification, no server-side order storage
+     (the "My Orders" list only lives in each customer's own browser
+     and will disappear if they clear their browser data).
+   - If you ever want those, that needs a real backend — a separate,
+     bigger project.
+
+I'm not a lawyer — please read through the Terms text yourself (and
+have the Telugu/Hindi checked) before this goes live.
+==================================================================
+-->
+
+</body>
+</html>
